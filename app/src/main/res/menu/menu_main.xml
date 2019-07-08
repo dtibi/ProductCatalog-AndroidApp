@@ -3,8 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.android.productcatalog.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/login"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="Log In"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/add_product"
+        android:orderInCategory="100"
+        android:title="Add Product"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/exit"
+        android:orderInCategory="100"
+        android:title="Exit"
         app:showAsAction="never" />
 </menu>
