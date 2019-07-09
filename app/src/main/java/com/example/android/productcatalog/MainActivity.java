@@ -186,9 +186,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateUI(GoogleSignInAccount account) {
         // TODO: check if admin connected and allow deletion of products
-        Log.d(TAG, account.getDisplayName());
-        if (account.getDisplayName().contentEquals("cky master")) {
-            userisadmin = true;
+        if (account==null) {
+            // Login Failed
+            Toast.makeText(getApplicationContext(),"Login Failed",Toast.LENGTH_LONG).show();
+        } else {
+            Log.d(TAG, account.getDisplayName());
+            if (account.getDisplayName().contentEquals("cky master")) {
+                userisadmin = true;
+            }
         }
     }
 
