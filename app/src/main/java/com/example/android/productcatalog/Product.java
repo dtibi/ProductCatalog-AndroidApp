@@ -9,6 +9,13 @@ class Product {
     float price;
     String image;
 
+    public Product() {
+        this.name = "";
+        this.description = "";
+        this.price = 0;
+        this.image = "";
+    }
+
     public Product(String name, String description, float price, String image) {
         this.name = name;
         this.description = description;
