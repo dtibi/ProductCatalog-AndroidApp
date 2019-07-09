@@ -29,7 +29,7 @@
             android:layout_weight="0"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Description" />
+            android:hint="Description" />
 
         <EditText
             android:id="@+id/price"

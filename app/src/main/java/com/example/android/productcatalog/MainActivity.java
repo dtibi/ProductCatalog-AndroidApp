@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                            int position, long id) {
                 if (userisadmin) {
                     final Product item = (Product) parent.getItemAtPosition(position);
+                    // TODO: allow admin to delete from firebase
                     adapter.remove(item);
                     return false;
                 }
@@ -215,7 +216,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Resources resources = context.getResources();
             final int resourceId = resources.getIdentifier(values.get(position).getImage(), "drawable",
                     context.getPackageName());
-
+            TextView price = rowView.findViewById(R.id.price_row);
+            price.setText(values.get(position).getPrice() + " $");
             //imageView.setImageDrawable(resources.getDrawable(resourceId));
 
             return rowView;
