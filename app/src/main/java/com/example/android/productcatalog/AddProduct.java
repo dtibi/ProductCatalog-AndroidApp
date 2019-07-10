@@ -1,6 +1,8 @@
 package com.example.android.productcatalog;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -12,6 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class AddProduct extends AppCompatActivity implements View.OnClickListener {
@@ -20,6 +23,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     EditText desc;
     EditText price;
     EditText img;
+    ImageView imgClick;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,15 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         desc = findViewById(R.id.description);
         price = findViewById(R.id.price);
         img = findViewById(R.id.name);
+        imgClick = (ImageView)findViewById(R.id.camera);
+        imgClick.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                startActivityForResult(intent, 0);
+            }
+        });
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(this);
     }
@@ -57,5 +70,14 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
             return false;
         }
         return true;
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
+
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            imgClick.setImageBitmap(photo);
+
+        }
     }
 }
