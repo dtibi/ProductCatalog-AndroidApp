@@ -1,6 +1,7 @@
 package com.example.android.productcatalog;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -40,10 +42,11 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ProdCutDebug_tibi";
-    public static boolean userisadmin = false;
+    public static boolean userisadmin = true;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
+    private AlertDialog.Builder builder;
     FirebaseDatabase database;
     DatabaseReference myRef;
     ArrayList<Product> values;
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        builder = new AlertDialog.Builder(this);
         mAuth = FirebaseAuth.getInstance();
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -101,8 +104,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                            int position, long id) {
                 if (userisadmin) {
                     final Product item = (Product) parent.getItemAtPosition(position);
+                    builder.setMessage("Are you certain you want to remove this item?")
+                            .setTitle("Remove item dialog")
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                    Toast.makeText(getApplicationContext(),"you choose yes action for alertbox",
+                                            Toast.LENGTH_SHORT).show();
+                                    adapter.remove(item);
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    //  Action for 'NO' Button
+                                    dialog.cancel();
+                                    Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });  ;
+
                     // TODO: allow admin to delete from firebase
-                    adapter.remove(item);
+                    AlertDialog alert = builder.create();
+                    //Setting the title manually
+                    alert.setTitle("AlertDialogExample");
+                    alert.show();
                     return false;
                 }
                 return false;
