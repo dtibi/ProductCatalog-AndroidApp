@@ -25,6 +25,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     EditText img;
     ImageView imgClick;
 
+    // REQ #2 Add product layout activity allowing admin user to add products to database
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,23 +35,21 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         name = findViewById(R.id.name);
         desc = findViewById(R.id.description);
         price = findViewById(R.id.price);
-        img = findViewById(R.id.name);
-        imgClick = (ImageView)findViewById(R.id.camera);
-        imgClick.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivityForResult(intent, 0);
-            }
-        });
+        // img will be used to save image data for later retrial from storage
+        img = name;
+        imgClick = findViewById(R.id.camera);
         FloatingActionButton fab = findViewById(R.id.fab);
+        // REQ #4 use dynamic listener (part 1)
         fab.setOnClickListener(this);
+    }
+    // REQ #4 use static listener (part 1)
+    public void getCaptureImage(View view) {
+        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        startActivityForResult(intent, 0);
     }
 
     @Override
     public void onClick(View view) {
-        // TODO: add product to database
         if(!inputIsLegal()) {
             Toast.makeText(getApplicationContext(),"Fill All Fields To Add New Product", Toast.LENGTH_LONG).show();
             return;
@@ -59,7 +58,8 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         DatabaseReference myRef = database.getReference("products/" + name.getText().hashCode());
 //        database.getReference().getDatabase();
         myRef.setValue(new Product(name.getText().toString(),desc.getText().toString(),Float.parseFloat(price.getText().toString()),img.getText().toString()));
-        startActivity(new Intent(this, MainActivity.class));
+
+        finish();
     }
 
     private boolean inputIsLegal() {
@@ -78,6 +78,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
             Bitmap photo = (Bitmap) data.getExtras().get("data");
             imgClick.setImageBitmap(photo);
 
+            // TODO: upload image to firebase storage for users to be able to download them and see them as icons
         }
     }
 }

@@ -41,6 +41,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
+// TODO: add broadcast receiver to check internet connectivity (REQ #8)
+// TODO: add service to work with firebase msg and notify user of new products (REQ #9)
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ProdCutDebug_tibi";
     public static boolean userisadmin = true;
@@ -52,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DatabaseReference myRef;
     ArrayList<Product> values;
 
+    // REQ #1 : primary layout activity showing user the list of products available
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         myRef = database.getReference("products");
 
         // Read from the database
+        // REQ #4 another dynamic listener
         myRef.addValueEventListener(new ValueEventListener() {
 
             @Override
@@ -86,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
+                Log.w(TAG, "Failed to read list view value.", error.toException());
             }
         });
 
@@ -104,9 +110,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public boolean onItemLongClick(AdapterView<?> parent, final View view,
                                            int position, long id) {
                 if (userisadmin) {
+                    // REQ #5 dialog COMPLETE
                     final Product item = (Product) parent.getItemAtPosition(position);
-                    builder.setMessage("Are you certain you want to remove this item?")
-                            .setTitle("Remove item dialog")
+                    builder.setMessage("Are you certain you want to remove this item from the database?")
                             .setCancelable(false)
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
@@ -123,12 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
                                             Toast.LENGTH_SHORT).show();
                                 }
-                            });  ;
-
-                    // TODO: allow admin to delete from firebase
+                            });
                     AlertDialog alert = builder.create();
                     //Setting the title manually
-                    alert.setTitle("AlertDialogExample");
+                    alert.setTitle("Delete Item?");
                     alert.show();
                     return false;
                 }
@@ -144,10 +148,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void signIn() {
+        // REQ #3 sign-in screen made by google COMPLETE
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
     @Override
+
+    // REQ #6 menu with at least 2 entries. We have 3 (log-in, add product, exit)
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -225,6 +232,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    // REQ #7 working with adapter info of firebase
+    // TODO: move the handling of getting products from firebase to actually work with adapter. currently the query for getting products is done in OnCreate function when it should happen in the adapter as well as deleting items
     public class MySimpleArrayAdapter extends ArrayAdapter<Product> {
         private final Context context;
         private final ArrayList<Product> values;
@@ -251,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TextView price = rowView.findViewById(R.id.price_row);
             price.setText(values.get(position).getPrice() + " $");
             //imageView.setImageDrawable(resources.getDrawable(resourceId));
+
+            // TODO: after DOING the firebase storage upload of images make sure to now donwload these images to show user icons of products
 
             return rowView;
         }
