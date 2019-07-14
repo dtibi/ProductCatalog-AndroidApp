@@ -24,7 +24,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     EditText price;
     EditText img;
     ImageView imgClick;
-
+    Bitmap photo=null;
     // REQ #2 Add product layout activity allowing admin user to add products to database
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
 
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            photo = (Bitmap) data.getExtras().get("data");
             imgClick.setImageBitmap(photo);
 
             // TODO: upload image to firebase storage for users to be able to download them and see them as icons
