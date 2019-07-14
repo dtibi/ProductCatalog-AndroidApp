@@ -1,9 +1,12 @@
 package com.example.android.productcatalog;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -42,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-// TODO: add broadcast receiver to check internet connectivity (REQ #8)
+
 // TODO: add service to work with firebase msg and notify user of new products (REQ #9)
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     FirebaseDatabase database;
     DatabaseReference myRef;
     ArrayList<Product> values;
+    BroadcastReceiver br;
 
     // REQ #1 : primary layout activity showing user the list of products available
     @Override
@@ -63,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         builder = new AlertDialog.Builder(this);
         mAuth = FirebaseAuth.getInstance();
         // Configure Google Sign In
@@ -72,14 +75,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("products");
-
         // Read from the database
         // REQ #4 another dynamic listener
         myRef.addValueEventListener(new ValueEventListener() {
-
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -144,7 +144,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        signIn();
+        br = new MyReciver();
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        this.registerReceiver(br, filter);
+        if(((MyReciver)br).connection)
+        {
+            signIn();
+        }
+
     }
 
     private void signIn() {
