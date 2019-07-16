@@ -3,6 +3,7 @@ package com.example.android.productcatalog;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -12,10 +13,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.ByteArrayOutputStream;
 
 public class AddProduct extends AppCompatActivity implements View.OnClickListener {
 
@@ -81,4 +85,5 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
             // TODO: upload image to firebase storage for users to be able to download them and see them as icons
         }
     }
+
 }

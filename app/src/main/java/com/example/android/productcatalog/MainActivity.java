@@ -50,7 +50,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ProdCutDebug_tibi";
-    public static boolean userisadmin = true;
+    public static boolean userisadmin = false;
+    public static boolean logged = false;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
@@ -70,11 +71,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         builder = new AlertDialog.Builder(this);
         mAuth = FirebaseAuth.getInstance();
         // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("products");
         // Read from the database
@@ -156,9 +152,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void signIn() {
-        // REQ #3 sign-in screen made by google COMPLETE
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        Intent intent = new Intent(this, Login.class);
+        startActivityForResult(intent,1);
     }
     @Override
 
@@ -181,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 signIn();
                 break;
             case R.id.add_product:
-                if (userisadmin) {
+                if (logged) {
                     startActivity(new Intent(this, AddProduct.class));
                 } else {
                     Toast.makeText(getApplicationContext(),"Log In First!",Toast.LENGTH_LONG).show();
@@ -200,42 +195,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
+        String result=data.getStringExtra("result");
+        if(result.equals("user"))
+        {
+            Toast.makeText(getApplicationContext(),"User Login successful",
+                    Toast.LENGTH_SHORT).show();
+            logged=true;
         }
-    }
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            // Signed in successfully, show authenticated UI.
-            updateUI(account);
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-            updateUI(null);
-        }
-    }
-
-    private void updateUI(GoogleSignInAccount account) {
-        // TODO: check if admin connected and allow deletion of products
-        if (account==null) {
-            // Login Failed
-            Toast.makeText(getApplicationContext(),"Login Failed",Toast.LENGTH_LONG).show();
-        } else {
-            Log.d(TAG, account.getDisplayName());
-            if (account.getDisplayName().contentEquals("cky master")) {
-                userisadmin = true;
-            }
+        if(result.equals("admin"))
+        {
+            Toast.makeText(getApplicationContext(),"Admin Login successful",
+                    Toast.LENGTH_SHORT).show();
+            userisadmin = true;
+            logged=true;
         }
     }
 

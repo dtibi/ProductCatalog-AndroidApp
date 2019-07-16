@@ -24,7 +24,7 @@ public class MyReciver extends BroadcastReceiver {
             connection=true;
             if(reload==1) {
                 Intent startIntent = new Intent(context, MainActivity.class);
-                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 context.startActivity(startIntent);
             }
 
