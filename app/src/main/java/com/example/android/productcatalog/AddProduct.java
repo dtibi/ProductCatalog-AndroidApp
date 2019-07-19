@@ -6,19 +6,26 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 
 import android.provider.MediaStore;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,6 +44,9 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     FirebaseStorage storage;
     StorageReference storageReference;
     boolean photo_sign=false;
+    FirebaseAuth mAuth;
+    private static String TAG = "addProduct_tibi";
+
     // REQ #2 Add product layout activity allowing admin user to add products to database
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +65,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         FloatingActionButton fab = findViewById(R.id.fab);
         // REQ #4 use dynamic listener (part 1)
         fab.setOnClickListener(this);
+        mAuth = FirebaseAuth.getInstance();
     }
     // REQ #4 use static listener (part 1)
     public void getCaptureImage(View view) {
@@ -107,4 +118,30 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         final UploadTask uploadTask = ref.putBytes(data);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            Log.i(TAG, "onStart:user logged in is " + user.toString());
+            // do your stuff
+        } else {
+            signInAnonymously();
+        }
+    }
+
+    private void signInAnonymously() {
+        mAuth.signInAnonymously().addOnSuccessListener(this, new  OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                // do your stuff
+            }
+        })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e(TAG, "signInAnonymously:FAILURE", exception);
+                    }
+                });
+    }
 }
