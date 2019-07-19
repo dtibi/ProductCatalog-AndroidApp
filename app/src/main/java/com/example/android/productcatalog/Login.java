@@ -104,7 +104,7 @@ public class Login  extends AppCompatActivity {
 //        database.getReference().getDatabase();
                        myRef.setValue(new User(email.getText().toString(),pass.getText().toString()));
                        Intent returnIntent = new Intent();
-                       returnIntent.putExtra("result",1);
+                       returnIntent.putExtra("result","user");
                        setResult(Activity.RESULT_OK,returnIntent);
                        finish();
                    }
@@ -156,5 +156,12 @@ public class Login  extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_CANCELED,returnIntent);
+        super.onBackPressed();
     }
 }

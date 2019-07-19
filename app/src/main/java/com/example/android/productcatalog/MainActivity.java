@@ -1,5 +1,6 @@
 package com.example.android.productcatalog;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -198,19 +199,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        String result=data.getStringExtra("result");
-        if(result.equals("user"))
-        {
-            Toast.makeText(getApplicationContext(),"User Login successful",
-                    Toast.LENGTH_SHORT).show();
-            logged=true;
+        if(resultCode == Activity.RESULT_OK) {
+            String result = data.getStringExtra("result");
+            if (result.equals("user")) {
+                Toast.makeText(getApplicationContext(), "User Login successful",
+                        Toast.LENGTH_SHORT).show();
+                logged = true;
+            }
+            if (result.equals("admin")) {
+                Toast.makeText(getApplicationContext(), "Admin Login successful",
+                        Toast.LENGTH_SHORT).show();
+                userisadmin = true;
+                logged = true;
+            }
         }
-        if(result.equals("admin"))
+        if(resultCode == Activity.RESULT_CANCELED)
         {
-            Toast.makeText(getApplicationContext(),"Admin Login successful",
+            Toast.makeText(getApplicationContext(), "Back botton pressed , Login failed!",
                     Toast.LENGTH_SHORT).show();
-            userisadmin = true;
-            logged=true;
         }
     }
 
