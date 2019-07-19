@@ -3,19 +3,28 @@ package com.example.android.productcatalog;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+
+import android.provider.MediaStore;
 
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.ByteArrayOutputStream;
 
 public class AddProduct extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,7 +33,10 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     EditText price;
     EditText img;
     ImageView imgClick;
-
+    Bitmap imageBitmap=null;
+    FirebaseStorage storage;
+    StorageReference storageReference;
+    boolean photo_sign=false;
     // REQ #2 Add product layout activity allowing admin user to add products to database
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +44,8 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         setContentView(R.layout.activity_add_product);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
         name = findViewById(R.id.name);
         desc = findViewById(R.id.description);
         price = findViewById(R.id.price);
@@ -44,21 +58,25 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     }
     // REQ #4 use static listener (part 1)
     public void getCaptureImage(View view) {
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        startActivityForResult(intent, 0);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, 0);
     }
-
     @Override
     public void onClick(View view) {
         if(!inputIsLegal()) {
             Toast.makeText(getApplicationContext(),"Fill All Fields To Add New Product", Toast.LENGTH_LONG).show();
             return;
         }
+        if(!photo_sign)
+        {
+            Toast.makeText(getApplicationContext(),"take a picture of the Product", Toast.LENGTH_LONG).show();
+            return;
+        }
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("products/" + name.getText().hashCode());
 //        database.getReference().getDatabase();
         myRef.setValue(new Product(name.getText().toString(),desc.getText().toString(),Float.parseFloat(price.getText().toString()),img.getText().toString()));
-
+        uploadImage(imageBitmap);
         finish();
     }
 
@@ -73,12 +91,20 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            imgClick.setImageBitmap(photo);
-
-            // TODO: upload image to firebase storage for users to be able to download them and see them as icons
-        }
+            if (requestCode == 0 && resultCode == RESULT_OK && data != null)
+            {
+                imageBitmap = (Bitmap) data.getExtras().get("data");
+                imgClick.setImageBitmap(imageBitmap);
+                photo_sign=true;
+            }
     }
+    //uploading to storage methood
+    private void uploadImage(Bitmap bitmap) {
+        final StorageReference ref = storageReference.child("images/" + "check" + ".jpg");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+        byte[] data = baos.toByteArray();
+        final UploadTask uploadTask = ref.putBytes(data);
+    }
+
 }
