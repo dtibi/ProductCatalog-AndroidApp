@@ -13,6 +13,13 @@
         android:title="Add Product"
         app:showAsAction="never" />
     <item
+        android:id="@+id/subscribe"
+        android:orderInCategory="100"
+        android:title="Notifications"
+        app:showAsAction="never"
+        />
+
+    <item
         android:id="@+id/exit"
         android:orderInCategory="100"
         android:title="Exit"

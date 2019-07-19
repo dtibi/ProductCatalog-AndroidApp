@@ -1,9 +1,12 @@
 package com.example.android.productcatalog;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -11,6 +14,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -18,7 +22,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -43,11 +49,11 @@ import java.util.Map;
 
 
 // TODO: add broadcast receiver to check internet connectivity (REQ #8)
-// TODO: add service to work with firebase msg and notify user of new products (REQ #9)
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ProdCutDebug_tibi";
     public static boolean userisadmin = true;
+    public static String CHANNEL_ID = "main_channel";
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
@@ -55,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     FirebaseDatabase database;
     DatabaseReference myRef;
     ArrayList<Product> values;
+
 
     // REQ #1 : primary layout activity showing user the list of products available
     @Override
@@ -96,8 +103,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        createNotificationChannel();
+    }
 
-
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     private void updateListView(ArrayList<Product> products) {
@@ -152,9 +174,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
-    @Override
 
+
+    public void subscription() {
+        builder.setMessage("would you like to get notifications on new products?")
+                .setCancelable(false)
+                .setPositiveButton("Subscribe", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        registerTopic();
+                    }
+                })
+                .setNegativeButton("Unsubscribe", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        unregisterTopic();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        //Setting the title manually
+        alert.setTitle("Subscribe?");
+        alert.show();
+    }
+
+    public void registerTopic () {
+        FirebaseMessaging.getInstance().subscribeToTopic("new_products")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "subscribed to New Products";
+                        if (!task.isSuccessful()) {
+                            msg = "unable to subscribe to New Products";
+                        }
+                        Log.d(TAG, msg);
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    public void unregisterTopic () {
+        FirebaseMessaging.getInstance().unsubscribeFromTopic("new_products")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "unsubscribed from New Products";
+                        if (!task.isSuccessful()) {
+                            msg = "unable to unsubscribe to New Products";
+                        }
+                        Log.d(TAG, msg);
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
     // REQ #6 menu with at least 2 entries. We have 3 (log-in, add product, exit)
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -181,6 +254,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.exit:
                 System.exit(0);
+                break;
+            case R.id.subscribe:
+                subscription();
                 break;
         }
 
