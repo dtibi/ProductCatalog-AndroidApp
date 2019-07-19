@@ -1,9 +1,8 @@
 package com.example.android.productcatalog;
 
-import android.app.Activity;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -87,7 +86,7 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
         DatabaseReference myRef = database.getReference("products/" + name.getText().hashCode());
 //        database.getReference().getDatabase();
         myRef.setValue(new Product(name.getText().toString(),desc.getText().toString(),Float.parseFloat(price.getText().toString()),img.getText().toString()));
-        uploadImage(imageBitmap);
+        uploadImage(imageBitmap,name.getText().toString());
         finish();
     }
 
@@ -110,8 +109,8 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
             }
     }
     //uploading to storage methood
-    private void uploadImage(Bitmap bitmap) {
-        final StorageReference ref = storageReference.child("images/" + "check" + ".jpg");
+    private void uploadImage(Bitmap bitmap,String name) {
+        final StorageReference ref = storageReference.child("images/" + name + ".jpg");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
         byte[] data = baos.toByteArray();
