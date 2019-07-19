@@ -13,6 +13,8 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+
+ // REQ #9 service for showing notifications when new products are created!
 public class MyNewProductService extends FirebaseMessagingService {
     private static String TAG = "service_tibi";
     public static String CHANNEL_ID = "main_channel";
