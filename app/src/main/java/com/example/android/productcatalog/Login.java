@@ -105,6 +105,7 @@ public class Login  extends AppCompatActivity {
                        myRef.setValue(new User(email.getText().toString(),pass.getText().toString()));
                        Intent returnIntent = new Intent();
                        returnIntent.putExtra("result","user");
+                       returnIntent.putExtra("state" , "logged");
                        setResult(Activity.RESULT_OK,returnIntent);
                        finish();
                    }
@@ -132,6 +133,7 @@ public class Login  extends AppCompatActivity {
                             found=1;
                             Intent returnIntent = new Intent();
                             returnIntent.putExtra("result","user");
+                            returnIntent.putExtra("state" , "logged");
                             setResult(Activity.RESULT_OK,returnIntent);
                             finish();
                         }
@@ -144,6 +146,7 @@ public class Login  extends AppCompatActivity {
                             found=1;
                             Intent returnIntent = new Intent();
                             returnIntent.putExtra("result","admin");
+                            returnIntent.putExtra("state" , "logged");
                             setResult(Activity.RESULT_OK,returnIntent);
                             finish();
                         }

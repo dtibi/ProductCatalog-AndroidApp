@@ -13,4 +13,5 @@
     <string name="title_activity_add_product">AddProduct</string>
     <string name="channel_name">main_channel</string>
     <string name="channel_description">new products channel notifications</string>
+    <string name="logged"></string>
 </resources>

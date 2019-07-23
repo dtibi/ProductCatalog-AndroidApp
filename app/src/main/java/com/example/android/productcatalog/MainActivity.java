@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -39,6 +40,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +55,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DatabaseReference myRef;
     ArrayList<Product> values;
     BroadcastReceiver br;
+    ArrayList<String> loginCheck;
 
     // REQ #1 : primary layout activity showing user the list of products available
     @Override
@@ -80,7 +90,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        loginCheck=SPread();
+        if(loginCheck.get(0)=="logged")
+        {
+            logged=true;
+        }
+        if(loginCheck.get(1)=="admin")
+        {
+            userisadmin=true;
+        }
         builder = new AlertDialog.Builder(this);
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -172,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         this.registerReceiver(br, filter);
+
         if(((MyReciver)br).connection)
         {
             signIn();
@@ -252,7 +271,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (id){
             case R.id.login:
-                signIn();
+                if(loginCheck.get(0)!="logged")
+                {
+                    signIn();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Already logged in",Toast.LENGTH_LONG).show();
+                }
                 break;
             case R.id.add_product:
                 if (logged) {
@@ -282,6 +308,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             String result = data.getStringExtra("result");
+            String result2=data.getStringExtra("state");
+            if(result2.equals("logged"))
+            {
+                if (result.equals("user"))
+                    SPwrite("user");
+                else
+                    SPwrite("admin");
+            }
             if (result.equals("user")) {
                 Toast.makeText(getApplicationContext(), "User Login successful",
                         Toast.LENGTH_SHORT).show();
@@ -323,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TextView description = rowView.findViewById(R.id.secondLine);
             ImageView imageView = rowView.findViewById(R.id.icon);
             description.setText(values.get(position).getDescription());
-            loadImage(imageView,values.get(position).getName());
+            //loadImage(imageView,values.get(position).getName());
             title.setText(values.get(position).getName());
             Resources resources = context.getResources();
             final int resourceId = resources.getIdentifier(values.get(position).getImage(), "drawable",
@@ -357,5 +391,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+    }
+
+    public void SPwrite(String userType)
+    {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("login","logged");
+        editor.putString("type",userType);
+        editor.apply();
+    }
+    public ArrayList<String> SPread()
+    {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String name = preferences.getString("login", "");
+        String type = preferences.getString("type", "");
+        ArrayList<String> ret=new ArrayList<>();
+        ret.add(name);
+        ret.add(type);
+        return ret;
     }
 }
