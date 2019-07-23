@@ -30,6 +30,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("products");
-
         // Read from the database
         // REQ #4 another dynamic listener
         myRef.addValueEventListener(new ValueEventListener() {
@@ -161,7 +161,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     dialog.cancel();
                                     Toast.makeText(getApplicationContext(),"you choose yes action for alertbox",
                                             Toast.LENGTH_SHORT).show();
-                                    adapter.remove(item);
+                                    deleteFireBaseItem(item);
+                                    removeImage(item.name);
                                 }
                             })
                             .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -357,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TextView description = rowView.findViewById(R.id.secondLine);
             ImageView imageView = rowView.findViewById(R.id.icon);
             description.setText(values.get(position).getDescription());
-            //loadImage(imageView,values.get(position).getName());
+            loadImage(imageView,values.get(position).getName());
             title.setText(values.get(position).getName());
             Resources resources = context.getResources();
             final int resourceId = resources.getIdentifier(values.get(position).getImage(), "drawable",
@@ -410,5 +411,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ret.add(name);
         ret.add(type);
         return ret;
+    }
+    public void deleteFireBaseItem(Product item)
+    {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        Query applesQuery = ref.child("products").orderByChild("name").equalTo(item.getName());
+
+        applesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot appleSnapshot: dataSnapshot.getChildren()) {
+                    appleSnapshot.getRef().removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(TAG, "onCancelled", databaseError.toException());
+            }
+        });
+    }
+    public void removeImage(String name)
+    {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+
+// Create a reference to the file to delete
+        StorageReference desertRef = storageRef.child("images/"+name+".jpg");
+
+// Delete the file
+        desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                // File deleted successfully
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Uh-oh, an error occurred!
+            }
+        });
+
+
     }
 }
