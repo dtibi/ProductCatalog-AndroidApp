@@ -93,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         loginCheck=SPread();
-        if(loginCheck.get(0)=="logged")
+        if(loginCheck.get(0).equals("logged"))
         {
             logged=true;
         }
-        if(loginCheck.get(1)=="admin")
+        if(loginCheck.get(1).equals("admin"))
         {
             userisadmin=true;
         }
