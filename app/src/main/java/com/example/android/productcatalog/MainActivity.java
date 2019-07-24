@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.add_product:
                 if(((MyReciver)br).connection) {
-                    if (logged) {
+                    if (userisadmin && logged) {
                         startActivity(new Intent(this, AddProduct.class));
                     } else {
                         Toast.makeText(getApplicationContext(), "Log In First!", Toast.LENGTH_LONG).show();
