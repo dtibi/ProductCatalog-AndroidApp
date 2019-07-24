@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<Product> values;
     BroadcastReceiver br;
     ArrayList<String> loginCheck;
+    boolean connection;
 
     // REQ #1 : primary layout activity showing user the list of products available
     @Override
@@ -191,12 +192,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         this.registerReceiver(br, filter);
-
-        if(((MyReciver)br).connection)
+        if(!((MyReciver)br).connection)
         {
-            signIn();
+            connection=true;
         }
-
+        else
+            connection=false;
     }
 
     private void signIn() {
@@ -272,27 +273,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (id){
             case R.id.login:
-                if(loginCheck.get(0)!="logged")
-                {
-                    signIn();
+                if(((MyReciver)br).connection) {
+                    if (!loginCheck.get(0).equals("logged") ) {
+                        signIn();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Already logged in", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else
-                {
-                    Toast.makeText(getApplicationContext(),"Already logged in",Toast.LENGTH_LONG).show();
-                }
+                    Toast.makeText(getApplicationContext(), "Connect to the internet first!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.add_product:
-                if (logged) {
-                    startActivity(new Intent(this, AddProduct.class));
-                } else {
-                    Toast.makeText(getApplicationContext(),"Log In First!",Toast.LENGTH_LONG).show();
+                if(((MyReciver)br).connection) {
+                    if (logged) {
+                        startActivity(new Intent(this, AddProduct.class));
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Log In First!", Toast.LENGTH_LONG).show();
+                    }
                 }
+                else
+                    Toast.makeText(getApplicationContext(), "Connect to the internet first!", Toast.LENGTH_LONG).show();
                 break;
             case R.id.exit:
                 System.exit(0);
                 break;
             case R.id.subscribe:
-                subscription();
+                if(((MyReciver)br).connection) {
+                    subscription();
+                }
+                else
+                    Toast.makeText(getApplicationContext(), "Connect to the internet first!", Toast.LENGTH_LONG).show();
                 break;
         }
 
@@ -451,6 +461,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Uh-oh, an error occurred!
             }
         });
+
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        clearPref();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        clearPref();
+    }
+
+    private void clearPref() {
+        loginCheck=SPread();
+        if(loginCheck.size()>0)
+        {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = preferences.edit();
+            // Clearing all data from Shared Preferences
+            editor.clear();  // where editor is an Editor for Shared Preferences
+            editor.putString("login","logged");
+            editor.putString("type",loginCheck.get(1));
+            editor.apply();
+        }
 
 
     }

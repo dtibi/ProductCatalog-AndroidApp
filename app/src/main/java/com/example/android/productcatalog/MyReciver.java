@@ -20,7 +20,6 @@ public class MyReciver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if(checkInternet(context))
         {
-            Toast.makeText(context, "Network Available",Toast.LENGTH_LONG).show();
             connection=true;
             if(reload==1) {
                 Intent startIntent = new Intent(context, MainActivity.class);
@@ -39,9 +38,8 @@ public class MyReciver extends BroadcastReceiver {
 
     boolean checkInternet(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        //should check null because in airplane mode it will be null
-        return (netInfo != null && netInfo.isConnected());
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
     }
 
 }
