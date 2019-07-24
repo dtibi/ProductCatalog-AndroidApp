@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+// REQ #8 broadcast receiver handles connectivity to internet.
 public class MyReciver extends BroadcastReceiver {
     public boolean connection ;
     public int reload=0;

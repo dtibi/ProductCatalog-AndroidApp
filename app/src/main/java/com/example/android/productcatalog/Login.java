@@ -19,6 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+// REQ #3 this is the login layout allowing users to log in.
 public class Login  extends AppCompatActivity {
     EditText email,pass;
     Button Sign , log;

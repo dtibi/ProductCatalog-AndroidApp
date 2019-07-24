@@ -1,6 +1,7 @@
 package com.example.android.productcatalog;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -82,10 +83,13 @@ public class AddProduct extends AppCompatActivity implements View.OnClickListene
             Toast.makeText(getApplicationContext(),"take a picture of the Product", Toast.LENGTH_LONG).show();
             return;
         }
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("products/" + name.getText().hashCode());
-//        database.getReference().getDatabase();
-        myRef.setValue(new Product(name.getText().toString(),desc.getText().toString(),Float.parseFloat(price.getText().toString()),img.getText().toString()));
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("title",name.getText().toString());
+        resultIntent.putExtra("desc",desc.getText().toString());
+        resultIntent.putExtra("price",Float.parseFloat(price.getText().toString()));
+        resultIntent.putExtra("path",img.getText().toString());
+        setResult(Activity.RESULT_OK, resultIntent);
+        //upload image to storage
         uploadImage(imageBitmap,name.getText().toString());
         finish();
     }

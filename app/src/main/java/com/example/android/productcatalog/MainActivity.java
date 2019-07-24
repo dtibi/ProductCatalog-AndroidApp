@@ -1,8 +1,8 @@
 package com.example.android.productcatalog;
 
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,15 +12,29 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -36,42 +50,15 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ProdCutDebug_tibi";
     public static String CHANNEL_ID = "main_channel";
+    public static int LOGIN_ACTIVITY_CODE = 2;
+    public static int ADD_PRODUCT_ACTIVITY_CODE = 1;
     public static boolean userisadmin = false;
     public static boolean logged = false;
     private FirebaseAuth mAuth;
@@ -84,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     BroadcastReceiver br;
     ArrayList<String> loginCheck;
     boolean connection;
+    MySimpleArrayAdapter adapter;
 
     // REQ #1 : primary layout activity showing user the list of products available
     @Override
@@ -144,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void updateListView(ArrayList<Product> products) {
-        final MySimpleArrayAdapter adapter = new MySimpleArrayAdapter(this,products);
+        adapter = new MySimpleArrayAdapter(this,products);
         final ListView list = findViewById(R.id.product_list_view);
         list.setAdapter(adapter);
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -160,9 +148,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     dialog.cancel();
-                                    Toast.makeText(getApplicationContext(),"you choose yes action for alertbox",
+                                    Toast.makeText(getApplicationContext(),"Item Removed",
                                             Toast.LENGTH_SHORT).show();
-                                    deleteFireBaseItem(item);
+                                    adapter.removeFromFireBase(item);
                                     removeImage(item.name);
                                 }
                             })
@@ -170,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 public void onClick(DialogInterface dialog, int id) {
                                     //  Action for 'NO' Button
                                     dialog.cancel();
-                                    Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
+                                    Toast.makeText(getApplicationContext(),"Action Canceled",
                                             Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -192,17 +180,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
         this.registerReceiver(br, filter);
-        if(!((MyReciver)br).connection)
-        {
-            connection=true;
-        }
-        else
-            connection=false;
     }
 
     private void signIn() {
         Intent intent = new Intent(this, Login.class);
-        startActivityForResult(intent,1);
+        startActivityForResult(intent,LOGIN_ACTIVITY_CODE);
     }
 
 
@@ -286,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.add_product:
                 if(((MyReciver)br).connection) {
                     if (userisadmin && logged) {
-                        startActivity(new Intent(this, AddProduct.class));
+                        startActivityForResult(new Intent(this, AddProduct.class),ADD_PRODUCT_ACTIVITY_CODE);
                     } else {
                         Toast.makeText(getApplicationContext(), "Log In First!", Toast.LENGTH_LONG).show();
                     }
@@ -318,25 +300,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Activity.RESULT_OK) {
-            String result = data.getStringExtra("result");
-            String result2=data.getStringExtra("state");
-            if(result2.equals("logged"))
-            {
-                if (result.equals("user"))
-                    SPwrite("user");
-                else
-                    SPwrite("admin");
-            }
-            if (result.equals("user")) {
-                Toast.makeText(getApplicationContext(), "User Login successful",
-                        Toast.LENGTH_SHORT).show();
-                logged = true;
-            }
-            if (result.equals("admin")) {
-                Toast.makeText(getApplicationContext(), "Admin Login successful",
-                        Toast.LENGTH_SHORT).show();
-                userisadmin = true;
-                logged = true;
+            if (requestCode==ADD_PRODUCT_ACTIVITY_CODE) {
+                adapter.addToFireBase(new Product(data.getStringExtra("title"),data.getStringExtra("desc"),data.getFloatExtra("price", 0),data.getStringExtra("path")));
+            } else if(requestCode==LOGIN_ACTIVITY_CODE) {
+                String result = data.getStringExtra("result");
+                String result2 = data.getStringExtra("state");
+                if (result2.equals("logged")) {
+                    if (result.equals("user"))
+                        SPwrite("user");
+                    else
+                        SPwrite("admin");
+                }
+                if (result.equals("user")) {
+                    Toast.makeText(getApplicationContext(), "User Login successful",
+                            Toast.LENGTH_SHORT).show();
+                    logged = true;
+                }
+                if (result.equals("admin")) {
+                    Toast.makeText(getApplicationContext(), "Admin Login successful",
+                            Toast.LENGTH_SHORT).show();
+                    userisadmin = true;
+                    logged = true;
+                }
             }
         }
         if(resultCode == Activity.RESULT_CANCELED)
@@ -347,8 +332,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    // REQ #7 working with adapter info of firebase
-    // TODO: move the handling of getting products from firebase to actually work with adapter. currently the query for getting products is done in OnCreate function when it should happen in the adapter as well as deleting items
+    // REQ #7 working with adapter info of firebase and updating list constantly
     public class MySimpleArrayAdapter extends ArrayAdapter<Product> {
         private final Context context;
         private final ArrayList<Product> values;
@@ -357,6 +341,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super(context, -1, values);
             this.context = context;
             this.values = values;
+        }
+
+
+        public void addToFireBase(Product object) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef = database.getReference("products/" + object.getName().hashCode());
+            //        database.getReference().getDatabase();
+            myRef.setValue(object);
+        }
+
+        public void removeFromFireBase(Product item) {
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            Query applesQuery = ref.child("products").orderByChild("name").equalTo(item.getName());
+
+            applesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot appleSnapshot: dataSnapshot.getChildren()) {
+                        appleSnapshot.getRef().removeValue();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e(TAG, "onCancelled", databaseError.toException());
+                }
+            });
         }
 
         @Override
@@ -375,34 +386,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     context.getPackageName());
             TextView price = rowView.findViewById(R.id.price_row);
             price.setText(values.get(position).getPrice() + " $");
-            //imageView.setImageDrawable(resources.getDrawable(resourceId));
-
-            // TODO: after DOING the firebase storage upload of images make sure to now donwload these images to show user icons of products
 
             return rowView;
         }
+        public void loadImage(final ImageView imageView,String name)
+        {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            StorageReference islandRef = storageRef.child("images/"+name+".jpg");
+
+            final long ONE_MEGABYTE = 1024 * 1024;
+            islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    imageView.setImageBitmap(bitmap);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+
+                }
+            });
+        }
     }
 
-    public void loadImage(final ImageView imageView,String name)
-    {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        StorageReference islandRef = storageRef.child("images/"+name+".jpg");
 
-        final long ONE_MEGABYTE = 1024 * 1024;
-        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                imageView.setImageBitmap(bitmap);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-
-            }
-        });
-    }
 
     public void SPwrite(String userType)
     {
@@ -412,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putString("type",userType);
         editor.apply();
     }
+    //
     public ArrayList<String> SPread()
     {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -422,34 +432,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ret.add(type);
         return ret;
     }
-    public void deleteFireBaseItem(Product item)
-    {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-        Query applesQuery = ref.child("products").orderByChild("name").equalTo(item.getName());
-
-        applesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot appleSnapshot: dataSnapshot.getChildren()) {
-                    appleSnapshot.getRef().removeValue();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.e(TAG, "onCancelled", databaseError.toException());
-            }
-        });
-    }
     public void removeImage(String name)
     {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
-// Create a reference to the file to delete
+        // Create a reference to the file to delete
         StorageReference desertRef = storageRef.child("images/"+name+".jpg");
 
-// Delete the file
+        // Delete the file
         desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {

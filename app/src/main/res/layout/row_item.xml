@@ -2,7 +2,6 @@
 android:layout_width="fill_parent"
 android:layout_height="?android:attr/listPreferredItemHeight"
 android:padding="6dip" >
- <!-- TODO: maybe give each row item more height for better view of products since icons are kind of small and there is no product view layout -->
     <ImageView
         android:id="@+id/icon"
         android:layout_width="58dp"
