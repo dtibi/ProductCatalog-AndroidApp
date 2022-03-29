@@ -1,5 +1,7 @@
 name: "Label Commenter"
-
+env:
+  GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+  
 on:
   pull_request_target:
     types: [labeled, unlabeled]

@@ -7,7 +7,9 @@ on:
       - synchronize
       - labeled
       - unlabeled
-
+env:
+  GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+  
 jobs:
   check:
     runs-on: ubuntu-latest
