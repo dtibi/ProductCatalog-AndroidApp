@@ -10,6 +10,8 @@ labels:
     labeled:
       pr:
         body: "\
-          Thank you @{{ pull_request.user.login }} for suggesting this. Please follow the pull request templates.
-          The PR template is:
+          Hi @{{ pull_request.user.login }}. \n\
+          You Pull Request title does not follow LV's format.\n\
+          Please follow the pull request templates.\n
+          The PR template is:\n
           YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description."
