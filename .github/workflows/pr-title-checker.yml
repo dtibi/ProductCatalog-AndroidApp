@@ -7,9 +7,7 @@ on:
       - synchronize
       - labeled
       - unlabeled
-env:
-  GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-  
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -20,5 +18,6 @@ jobs:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - uses: dtibi/pr-title-checker@v1.3.5
         with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           pass_on_octokit_error: false
           configuration_path: ".github/pr-title-checker-config.json"
