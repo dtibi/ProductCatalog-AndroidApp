@@ -1,4 +1,4 @@
-name: "PR Title Checker"
+name: "Label Commenter"
 on:
   pull_request_target:
     types:
