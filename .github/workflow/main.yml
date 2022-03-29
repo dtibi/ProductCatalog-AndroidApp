@@ -1,0 +1,28 @@
+name: "PR Title Checker"
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - labeled
+      - unlabeled
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: thehanimo/pr-title-checker@v1.3.4
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pass_on_octokit_error: false
+          configuration_path: ".github/pr-title-checker-config.json"
+      - uses: wow-actions/auto-comment@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pullRequestLabeled: |
+            👋 @{{ author }}
+            Thank you for raising your pull request.
+            Please make sure you have followed LV's Pull Request Title guidelines.
+            The format is:
+            YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description.
