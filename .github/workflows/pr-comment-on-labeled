@@ -1,20 +1,21 @@
-name: "PR Title Checker"
+name: Label Commenter
+
 on:
+  issues:
+    types: [labeled, unlabeled]
   pull_request_target:
-    types:
-      - opened
-      - labeled
+    types: [labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+  comment:
+    runs-on: ubuntu-20.04
     steps:
-      - uses: wow-actions/auto-comment@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          pullRequestLabeled: |
-            👋 @{{ author }}
-            Thank you for raising your pull request.
-            Please make sure you have followed LV's Pull Request Title guidelines.
-            The format is:
-            YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description.
+      - uses: actions/checkout@v2
+
+      - name: Label Commenter
+        uses: peaceiris/actions-label-commenter@v1
