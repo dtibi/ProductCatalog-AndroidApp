@@ -9,7 +9,7 @@ labels:
   - name: title needs formatting
     labeled:
       pr:
-        body: |
-        Thank you @{{ pull_request.user.login }} for suggesting this. Please follow the pull request templates.
-        The PR template is:
-        YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description.
+        body: "\
+          Thank you @{{ pull_request.user.login }} for suggesting this. Please follow the pull request templates.
+          The PR template is:
+          YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description."
