@@ -1,4 +1,4 @@
-name: Label Commenter
+name: "Label Commenter"
 
 on:
   pull_request_target:
@@ -16,3 +16,5 @@ jobs:
 
       - name: Label Commenter
         uses: peaceiris/actions-label-commenter@v1
+        with:
+          config_file: .github/label-commenter-config.yml
