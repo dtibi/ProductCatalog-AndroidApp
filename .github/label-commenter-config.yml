@@ -6,7 +6,7 @@ comment:
     Responding to the bot or mentioning it won't have any effect."
 
 labels:
-  - name: title needs formatting
+  - name: "title needs formatting"
     labeled:
       pr:
         body: "\
