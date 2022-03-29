@@ -12,6 +12,7 @@
   "MESSAGES": {
     "success": "All OK",
     "failure": "Failing CI test",
-    "notice": "Please make sure you use the coorect format for pull request titles"
+    "notice": "Please make sure you use the coorect format for pull request titles",
+    "comment": "Hi @{{ pull_request.user.login }}. \n You Pull Request title does not follow LV's format.\n Please follow the pull request templates.\n The PR template is:\n YYwwWW.D, $USER, HSD_LINK, Flows Effected, Processes Effected, Short Change description."
   }
 }
